@@ -17,17 +17,27 @@ namespace SingleElseExceptionStarter
             //    return new MoreThanOneMovieMatchedException($"Expected to find at least 1 Movie for the Year: {requiredYear}, but no movies were found.");
             //});
 
-
             var requiredMovie = s_AllMovies.SingleElseException(m => m.Year == requiredYear, foundMovies =>
             {
                 var message = new StringBuilder();
-                message.AppendLine($"We were expecting exactly one movie for the Year: {requiredYear}, but found the following movies instead");
+
+                if (!foundMovies.Any())
+                {
+                    message.AppendLine($"We were expecting exactly one movie for the Year: {requiredYear}, but no matching movies were found.");
+                }
+                else
+                {
+                    message.AppendLine($"We were expecting exactly one movie for the Year: {requiredYear}, but found the following movies instead");
+                }                
+                
                 foreach (var movie in foundMovies)
                 {
                     message.AppendLine($"Title: {movie.Title}\t Year: {movie.Year}\t Genre: {movie.Genre}");
                 }
 
-                return new MoreThanOneMovieMatchedException(message.ToString());
+                var exception = new MoreThanOneMovieMatchedException(message.ToString());
+                exception.Data.Add("Year", requiredYear);
+                return exception;
             });
 
             Console.WriteLine($"{requiredMovie.Title}");
@@ -35,7 +45,7 @@ namespace SingleElseExceptionStarter
 
         private static IEnumerable<Movie> GetAllMovies()
         {
-            yield return new Movie("Star Wars Episode IV: A New Hope", "StarWarsEpisodeIV.jpg", "Sci-Fi", 1977);
+            yield return new Movie("Star Wars Episode IV: A New Hope", imageUrl: "StarWarsEpisodeIV.jpg", "Sci-Fi", 1977);
             yield return new Movie("Star Wars Episode V: The Empire Strikes Back", "StarWarsEpisodeV.jpg", "Sci-Fi", 1980);
             yield return new Movie("Star Wars Episode VI: Return of the Jedi", "StarWarsEpisodeVI.jpg", "Sci-Fi", 1983);
             yield return new Movie("Star Wars: Episode I: The Phantom Menace", "StarWarsEpisodeI.jpg", "Sci-Fi", 1999);
