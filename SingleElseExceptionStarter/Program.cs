@@ -105,35 +105,19 @@ namespace SingleElseExceptionStarter
     {
         public static T SingleElseException<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, Func<IEnumerable<T>, Exception> exceptionFactory)
         {
-            var matchedItems = new List<T>();
+            var matchedItems = sequence.Where(x => predicate(x));
+            return matchedItems.Count() == 1 ? matchedItems.Single() : throw exceptionFactory(matchedItems);
+        }
 
-            foreach (var item in sequence)
-            {
-                if (predicate(item))
-                {
-                    matchedItems.Add(item);
-                }
-            }
-
-            if (matchedItems.Count == 1)
-            {
-                return matchedItems[0];
-            }
-
-            throw exceptionFactory(matchedItems);
+        public static T SingleElseException<T>(this IEnumerable<T> sequence, Func<IEnumerable<T>, Exception> exceptionFactory)
+        {
+            return sequence.Count() == 1 ? sequence.First() : throw exceptionFactory(sequence);
         }
 
         public static T FirstElseException<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, Func<Exception> exceptionFactory)
         {
-            foreach (var item in sequence)
-            {
-                if (predicate(item))
-                {
-                    return item;
-                }
-            }
-
-            throw exceptionFactory();
+            var matchedItems = sequence.Where(x => predicate(x));
+            return matchedItems.Any() ? matchedItems.First() : throw exceptionFactory();
         }
     }
 }
